@@ -1,5 +1,6 @@
 # Pokemon-Site---Wild-Encounter-
 A simple site, which, through different API's creates an interactive experience, where the user can encounter different pokemons.
+Created as an examproject, for a course focussing on datadriven applications
 
 For this project, the following APIs have been use
 - PokeAPI for sprites and stats: https://pokeapi.co/
