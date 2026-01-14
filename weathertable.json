@@ -1,0 +1,30 @@
+[
+  {
+    "weather": "Sunny / Clear",
+    "boosted_types": "Grass, Ground, Fire"
+  },
+  {
+    "weather": "Rain / Drizzle / Thunder",
+    "boosted_types": "Water, Electric, Bug"
+  },
+  {
+    "weather": "Partly Cloudy",
+    "boosted_types": "Normal, Rock"
+  },
+  {
+    "weather": "Cloudy / Overcast",
+    "boosted_types": "Fairy, Fighting, Poison"
+  },
+  {
+    "weather": "Windy",
+    "boosted_types": "Dragon, Flying, Psychic"
+  },
+  {
+    "weather": "Snow / Ice / Sleet",
+    "boosted_types": "Ice, Steel"
+  },
+  {
+    "weather": "Fog / Mist",
+    "boosted_types": "Dark, Ghost"
+  }
+]

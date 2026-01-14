@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pokemon encounter</title>
+    <style>
+        body {
+            background: url('pokedex.jpg') center/cover fixed;
+            margin: 20px;
+            font-family: sans-serif;
+        }
+        #header, #encounter-result > div, #caught_pokemon {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+        #encounter-result {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            text-align: center;
+            align-items: flex-start;
+        }
+        #book-info, #general-info, #weather-info {
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            border: 2px solid;
+            padding: 10px;
+            overflow: hidden;
+        }
+        h3 {
+            text-align: center;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #666;
+            padding: 6px;
+            text-align: center;
+        }
+
+        #pokemon-chart {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #pokemon-chart canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+    <div id="header" style="text-align: center; border: 2px solid; padding-bottom: 20px;">
+        <h1>Welcome to the Pokémon Encounter Generator!</h1>
+        <p>Learn about different Pokémon, explore their unique stats, and catch your favorites! Click the button below to begin:</p>
+        <button id="generate-btn" style="font-size: 15px; padding: 15px 30px;">Generate Encounter</button>
+    </div>
+
+    <div id="encounter-result">
+        <div id="book-info" style="flex: 25%;">
+            <h3>Want to Learn More About Pokemon?</h3>
+            <div id="book-list" style="overflow-y: auto; flex: auto; font-size: 15px; text-align: left;">Loading books...</div>
+        </div>
+
+        <div id="general-info" style="flex: 50%; text-align: center; box-sizing: border-box;">
+            <div id="poke-api-content">
+                <div id="pokemon-header" style="margin: 0 0 10px 0; text-align: center; padding: 8px 0; border: 2px solid;">
+                    <h3 style="margin: 0; font-size: 16px;">Generate an encounter to see details!</h3>
+                </div>
+
+                <div id="pokemon-details" style="display: none; height: 450px; overflow: hidden;">
+                    <div style="width: 100%; margin: 0 auto;">
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid;">
+                            <tr>
+                                <td style="width: 40%; padding: 8px; vertical-align: top; height: 180px;">
+                                    <div id="pokemon-sprite" style="text-align: center; overflow: hidden; height: 100%;"></div>
+                                </td>
+                                <td style="width: 60%; vertical-align: middle; height: 180px;">
+                                    <div id="pokemon-chart">
+                                        <canvas id="statsChart"></canvas>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; vertical-align: top;">
+                                    <div id="pokemon-api-info" style="font-size: 13px; text-align: center; overflow: auto;"></div>
+                                </td>
+                                <td style="padding: 8px; vertical-align: middle;">
+                                    <div id="pokemon-gender-chart" style="width: 100%; height: 140px; display: flex; align-items: center; justify-content: center;">
+                                        <canvas id="genderChart" style="max-width: 240px; max-height: 140px;"></canvas>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="encounter_text" style="text-align: center; margin-top: 10px; display: none;">
+                    <button id="catch-btn" style="font-size: 50px; padding: 8px 16px;">
+                        pokeball.png
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="weather-info" style="flex: 25%;">
+            <h3>What Types Benefit From Today's Weather?</h3>
+            <div id="weather-display" style="background-color: #e8f4f8; padding: 10px; text-align: center; border-radius: 8px; font-size: 14px; font-weight: bold; border: 1px solid #b3d9e8;">Getting weather...</div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 13px; border-radius: 5px; overflow: hidden;">
+                <tr>
+                    <th style="border: 1px solid #666; padding: 6px; background-color: #4a90e2; color: white; font-size: 13px;">Weather</th>
+                    <th style="border: 1px solid #666; padding: 6px; background-color: #4a90e2; color: white; font-size: 13px;">Good for</th>
+                </tr>
+                <tbody id="weather-table" style="border: 1px solid black; font-size: 15px;"></tbody>
+            </table>
+            <div id="youtube-section" style="border-top: 2px solid #ccc; padding-top: 10px; text-align: center;">
+                <h3>Want some awesome music?</h3>
+                <button id="unmuteBtn" onclick="unmuteVideo()" style="padding: 10px 20px; font-size: 16px; margin-bottom: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; display: none;">🔊 Click to Unmute Video</button>
+                <div id="youtube-content" style="text-align: center;">Loading videos...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="caught_pokemon" style="border: 2px solid; height: 170px; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+            <h3 style="text-align: center; margin: 0; flex: 1;">List of your caught pokemon</h3>
+            <button id="clear-list-btn" style="padding: 8px 16px; font-size: 14px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer;">Clear List</button>
+        </div>
+        <ul id="catch-list" style="display: flex; gap: 15px; list-style-type: none; height: auto; margin: 0; padding: 10px; align-items: center; overflow-x: auto;"></ul>
+    </div>
+
+
+
+    <script>
+        //Globale variabler
+        let currentPokemon = '';
+        let currentChart = null;
+        let genderChart = null;
+        let player;
+        let currentMusicState = 'original';
+
+        //DOM elementer
+        const generateBtn = document.getElementById('generate-btn');
+        const catchBtn = document.getElementById('catch-btn');
+        const catchList = document.getElementById('catch-list');
+
+        //Event listeners
+        generateBtn.addEventListener('click', generateRandomEncounter);
+        catchBtn.addEventListener('click', catchPokemon);
+        document.getElementById('clear-list-btn').addEventListener('click', clearCaughtPokemon);
+
+        //Load caught Pokemon from localStorage
+        loadCaughtPokemon();
+
+        //Hovedfunktioner
+        async function generateRandomEncounter() {
+            triggerEncounter();
+            const pokemonName = await getRandomPokemonName();
+            currentPokemon = pokemonName;
+            showEncounter(pokemonName);
+            await loadPokemonData(pokemonName);
+        }
+
+        async function getRandomPokemonName() {
+            const response = await fetch('data.csv');
+            const csvText = await response.text();
+            const lines = csvText.split(/\r?\n/);
+            const dataLines = lines.slice(1);
+            const maxAvailable = Math.min(500, dataLines.length);
+            const randomLine = dataLines[Math.floor(Math.random() * maxAvailable)];
+            const pokemonData = randomLine.split(';');
+            return pokemonData[29].trim();
+        }
+
+        function showEncounter(pokemonName) {
+            const encounterTextDiv = document.getElementById('encounter_text');
+            encounterTextDiv.style.display = 'block';
+            encounterTextDiv.innerHTML = `
+                <p style="margin: 5px 0 15px 0;">A wild <strong>${pokemonName}</strong> appeared! <br> Catch it! or press the generate button to find a new pokemon</p>
+                <button id="catch-btn" style="font-size: 18px; padding: 12px 24px;">
+                    <img src="pokeball.png" alt="Catch" style="width: 4%; height: 4%;">
+                </button>
+            `;
+
+            setTimeout(() => {
+                const btn = document.getElementById('catch-btn');
+                if (btn) btn.addEventListener('click', catchPokemon);
+            }, 0);
+        }
+
+        async function loadPokemonData(pokemonName) {
+            const searchName = pokemonName.toLowerCase()
+                .replace('♀', '-f').replace('♂', '-m')
+                .replace('.', '').replace(' ', '-').replace("'", '');
+            const apiResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${searchName}`);
+            const data = await apiResponse.json();
+            const stats = {
+                attack: data.stats[1].base_stat,
+                defense: data.stats[2].base_stat,
+                hp: data.stats[0].base_stat,
+                spAttack: data.stats[3].base_stat,
+                spDefense: data.stats[4].base_stat,
+                speed: data.stats[5].base_stat
+            };
+            const totalStats = stats.hp + stats.attack + stats.defense + stats.spAttack + stats.spDefense + stats.speed;
+            const evolutionInfo = await getEvolutionInfo(data.id, searchName);
+            updatePokemonUI(pokemonName, data, stats, totalStats, evolutionInfo);
+        }
+
+        async function getEvolutionInfo(id, searchName) {
+            const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+            const speciesData = await speciesResponse.json();
+            const evolutionResponse = await fetch(speciesData.evolution_chain.url);
+            const evolutionData = await evolutionResponse.json();
+            return findEvolutionInfo(evolutionData.chain, searchName);
+        }
+
+        function findEvolutionInfo(chain, targetName) {
+            const target = targetName.toLowerCase().replace(/[^a-z]/g, '');
+            if (chain.species.name === target) return 'Base form';
+            for (let evolution of chain.evolves_to) {
+                if (evolution.species.name === target) return `Evolves from ${chain.species.name}`;
+                for (let secondEvolution of evolution.evolves_to) {
+                    if (secondEvolution.species.name === target) return `Evolves from ${evolution.species.name}`;
+                }
+            }
+            return 'Evolution info not available';
+        }
+
+        function updatePokemonUI(pokemonName, data, stats, totalStats, evolutionInfo) {
+            document.getElementById('pokemon-header').innerHTML =
+                `<h3 style="margin: 0; font-size: 25px;">${pokemonName}</h3>`;
+            document.getElementById('pokemon-details').style.display = 'flex';
+
+            document.getElementById('pokemon-sprite').innerHTML =
+                `<div style="text-align: center; margin-bottom: 6px;">
+                    <img src="${data.sprites.front_default}" alt="${pokemonName}"
+                         style="width:100%; max-width:235px; height:auto; object-fit: contain;">
+                 </div>`;
+
+            document.getElementById('pokemon-api-info').innerHTML = `
+                <p style="margin:4px 0;"><strong>Height:</strong> ~ ${data.height / 10} m</p>
+                <p style="margin:4px 0;"><strong>Weight:</strong> ~ ${data.weight / 10} kg</p>
+                <p style="margin:4px 0;"><strong>Type(s):</strong> ${data.types.map(t => t.type.name).join(', ')}</p>
+                <p style="margin:4px 0;"><strong>Abilities:</strong> ${data.abilities.map(a => a.ability.name).join(', ')}</p>
+                <p style="margin:4px 0;"><strong>ID:</strong> #${data.id}</p>
+                <p style="margin:4px 0;"><strong>Evolution:</strong> ${evolutionInfo}</p>
+                <p style="margin:4px 0;"><strong>Total Base Stats:</strong> ${totalStats}</p>
+            `;
+
+            document.getElementById('pokemon-chart').innerHTML =
+                `<canvas id="statsChart" style="width:100%; height:100%;"></canvas>`;
+            document.getElementById('pokemon-gender-chart').innerHTML =
+                `<canvas id="genderChart" style="width:100%; height:100%;"></canvas>`;
+
+            setTimeout(() => {
+                createStatsChart(stats);
+                createGenderPieChart(pokemonName);
+            }, 100);
+        }
+
+        function catchPokemon() {
+            if (!currentPokemon) return;
+
+            const currentSprite = document.querySelector('#pokemon-sprite img');
+            const spriteUrl = currentSprite ? currentSprite.src : '';
+         
+            const caughtPokemon = JSON.parse(localStorage.getItem('caughtPokemon') || '[]');
+            caughtPokemon.push({ name: currentPokemon, sprite: spriteUrl });
+            localStorage.setItem('caughtPokemon', JSON.stringify(caughtPokemon));
+
+            addPokemonToList(currentPokemon, spriteUrl);
+
+            document.getElementById('encounter_text').innerHTML = `
+                <p style="margin: 5px 0; color: green; font-weight: bold;">You caught ${currentPokemon}!</p>
+                <p style="margin: 5px 0; font-size: 12px;">Press generate to find more!</p>
+            `;
+            catchPokemonYouTube();
+            currentPokemon = '';
+        }
+
+        function addPokemonToList(pokemonName, spriteUrl) {
+            const newPokemon = document.createElement('li');
+            newPokemon.style.whiteSpace = 'nowrap';
+            newPokemon.style.textAlign = 'center';
+            newPokemon.style.minWidth = '100px';
+            newPokemon.innerHTML = `
+                <img src="${spriteUrl}" style="width: 80px; height: 80px; display: block; margin: 0 auto 8px;">
+                <span style="font-size: 14px; display: block; font-weight: bold;">${pokemonName}</span>
+            `;
+            catchList.appendChild(newPokemon);
+        }
+
+        function loadCaughtPokemon() {
+            const caughtPokemon = JSON.parse(localStorage.getItem('caughtPokemon') || '[]');
+            caughtPokemon.forEach(p => addPokemonToList(p.name, p.sprite));
+        }
+
+        function clearCaughtPokemon() {
+            if (confirm('Are you sure you want to clear all caught Pokemon?')) {
+                localStorage.removeItem('caughtPokemon');
+                catchList.innerHTML = '';
+            }
+        }
+
+        //Chart funktioner
+        function createStatsChart(stats) {
+            if (currentChart) currentChart.destroy();
+
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            currentChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Attack', 'Defense', 'HP', 'Sp. Attack', 'Sp. Defense', 'Speed'],
+                    datasets: [{
+                        label: 'Stats',
+                        data: [stats.attack, stats.defense, stats.hp, stats.spAttack, stats.spDefense, stats.speed],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,    // <-- VIGTIGT: brug hele containerens højde/bredde
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 200,
+                            ticks: {
+                                stepSize: 50,
+                                font: { size: 10 }
+                            },
+                            pointLabels: {
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false,
+                            position: 'bottom',
+                            labels: { font: { size: 5 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function createGenderPieChart(pokemonName) {
+            const response = await fetch('data.csv');
+            const csvText = await response.text();
+            const rows = csvText.split(/\r?\n/);
+            const formattedName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1).toLowerCase();
+
+            let genderValue = '';
+            for (let i = 1; i < rows.length; i++) {
+                const columns = rows[i].split(';');
+                if (columns[29]?.trim() === formattedName) {
+                    genderValue = (columns[30] || '').trim();
+                    break;
+                }
+            }
+
+            const container = document.getElementById('pokemon-gender-chart');
+            if (!genderValue) {
+                container.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 180px; color: #666;">No gender data</div>`;
+                return;
+            }
+
+            container.innerHTML = `<canvas id="genderChart" width="160" height="160" style="width:100%; height:100%;"></canvas>`;
+            const num = parseFloat(genderValue);
+            const malePercentage = Math.floor(num);
+            const femalePercentage = 100 - malePercentage;
+
+            const ctx = document.getElementById('genderChart').getContext('2d');
+            if (genderChart) genderChart.destroy();
+
+            genderChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        label: 'Gender Ratio',
+                        data: [malePercentage, femalePercentage],
+                        backgroundColor: ['#36A2EB', '#FF6384'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        //Weather
+        async function getWeather() {
+            const response = await fetch('weathertable.json');
+            const data = await response.json();
+
+            document.getElementById('weather-table').innerHTML = data.map((row, index) =>
+                `<tr style="background-color: ${index % 2 === 0 ? '#f8f9fa' : '#ffffff'};">
+                    <td style="border: 1px solid #666; padding: 5px; font-size: 13px;">${row.weather}</td>
+                    <td style="border: 1px solid #666; padding: 5px; font-size: 13px;">${row.boosted_types}</td>
+                </tr>`
+            ).join('');
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const url = `https://api.weatherapi.com/v1/current.json?key=WRITE YOUR OWN API KEY HERE=${lat},${lon}`;
+                const weatherResponse = await fetch(url);
+                const weatherData = await weatherResponse.json();
+                document.getElementById('weather-display').innerHTML =
+                    `${weatherData.location.name}: ${weatherData.current.condition.text}`;
+            });
+        }
+        getWeather();
+
+        //Books
+        async function listTheBooks() {
+            const response = await fetch("https://openlibrary.org/search.json?q=pokemon+guide");
+            const answer = await response.json();
+            const bookListDiv = document.getElementById('book-list');
+            bookListDiv.innerHTML = "";
+
+            if (!answer.docs || answer.docs.length === 0) {
+                bookListDiv.innerHTML =
+                    "<p style='text-align: center; color: #666;'>No books found. Try a different search.</p>";
+                return;
+            }
+
+            const books = answer.docs.slice(0, 12);
+            books.forEach(doc => {
+                const bookUrl = `https://openlibrary.org${doc.key}`;
+                const imageHtml = doc.cover_i
+                    ? `<a href="${bookUrl}" target="_blank"><img src="https://covers.openlibrary.org/b/id/${doc.cover_i}-S.jpg" style="float: left; margin-right: 8px; width: 70px; height: auto; border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;"></a>`
+                    : `<div style="float: left; margin-right: 8px; width: 70px; height: 90px; background: #ddd; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666;">No Cover</div>`;
+
+                bookListDiv.innerHTML += `
+                    <div style="clear: both; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 8px; min-height: 95px;">
+                        ${imageHtml}
+                        <div style="overflow: hidden;">
+                            <a href="${bookUrl}" target="_blank" style="text-decoration: none; color: inherit;">
+                                <strong style="display: block; font-size: 13px; line-height: 1.3; margin-bottom: 2px; cursor: pointer; color: #0066cc;">${doc.title}</strong>
+                            </a>
+                            <span style="color: #666; font-size: 11px;">By: ${doc.author_name ? doc.author_name[0] : 'Unknown'}</span><br>
+                            <span style="color: #666; font-size: 11px;">Year: ${doc.first_publish_year || 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        listTheBooks();
+
+        //YouTube
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player("youtube-content", {
+                videoId: "LUjqCjXe7IE",
+                height: "200",
+                width: "300",
+                playerVars: { autoplay: 1, controls: 1, mute: 1, enablejsapi: 1, start: 0 },
+                events: {
+                    onReady: (event) => {
+                        event.target.setVolume(60);
+                        event.target.playVideo();
+                        currentMusicState = 'original';
+                        document.getElementById('unmuteBtn').style.display = 'inline-block';
+                    },
+                    onError: () => {
+                        document.getElementById('youtube-content').innerHTML =
+                            "<p style='text-align: center; color: #666;'>Error loading video.</p>";
+                    }
+                }
+            });
+        }
+        if (window.YT && window.YT.Player) {
+            onYouTubeIframeAPIReady();
+        }
+        function unmuteVideo() {
+            player.unMute();
+            const playerState = player.getPlayerState();
+            if (playerState !== 1) player.playVideo();
+            document.getElementById('unmuteBtn').style.display = 'none';
+        }
+        function triggerEncounter() {
+            if (currentMusicState === 'original') {
+                player.loadVideoById({ videoId: "RjSmt7xqii4", startSeconds: 0 });
+                currentMusicState = 'battle';
+            }
+        }
+        function catchPokemonYouTube() {
+            player.loadVideoById({ videoId: "LUjqCjXe7IE", startSeconds: 0 });
+            currentMusicState = 'original';
+        }
+    </script>
+</</body>

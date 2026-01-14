@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon encounter</title>
+    <style>
+        body {
+            background-image: url('pokedex.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 20px;
+            font-family: sans-serif;
+        }
+        #header, #encounter-result > div, #caught_pokemon {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+    <!-- HTML uændret -->
+    <div id="header" style="text-align: center; border: 2px solid; padding-bottom: 20px;">
+        <h1>Welcome to the Pokémon Encounter Generator!</h1>
+        <p><b> Do you wanna be the very best?<br> Like no one ever was? <br> Is to catch them all your real test? <br>And training them is your cause?</b></p>
+    </div>
+    <div id="encounter-result" style="margin-top:15px; text-align: center; display: flex; gap: 10px;">
+  
+        <div id="general-info" style="border: 2px solid; padding: 10px; flex: 50%; text-align: center; height: 650">
+            <div id="poke-api-content" style="display: flex; flex-direction: column;">
+                <div id="pokemon-header" style="margin: 0 0 10px 0; text-align: center; display: flex; align-items: center; justify-content: center; height: auto; padding: 8px 0;">
+                    <strong>Let your journey begin!</strong>
+                </div>
+                <div>
+                    <p>What should you do when you run into a Pokemon? </p>
+                    <h4>Rule number 1!: <br> </h4>
+                    <p> Do not be afraid! This site makes sure to prepare you with pokeballs and knowledge.</p>
+                    <h4>Rule number 2!:</h4>
+                    <p>At the top of the page, you’ll find the “Generate Encounter” button. <br>
+                        Clicking it creates a new wild Pokémon, which appears in the center of the screen. <br>
+                        Once a Pokémon appears, you have two options: <br> <br>
+                        <strong>1.</strong> "Catch it" using the pokeball at the buttom. <br> <br><strong>2.</strong>
+                        Or look for another Pokemon by clicking "Generate Encounter" again
+                    </p>
+                    <h4>Tips:</h4>
+                    <p>On the left, you’ll see a list of strategy books that can help you understand Pokémon types, strengths, and tactics.</p>
+                    <p>In the middle, the encountered Pokémon is displayed along with important stats such as typing. <br> These help you judge whether the Pokémon is worth catching.</p>
+                    <p>On the right, you can see the current location and weather for the encounter. <br> Weather affects different Pokémon types differently, and the table below explains how each type reacts to different conditions.
+                    </p>
+                    <p>If you want a more immersive experience, you can click the green unmute button to turn on background music <br> to get battle themes during encounters and calm music afterwards.
+                    </p>
+                    <p>
+                       At the bottom, you’ll find a collection of all the Pokémon you’ve caught, each shown with its name and image. <br>
+                        This list is also saved locally, so you won’t lose your progress if you take a break.
+                    <h4>Ready? Press the pokeball to start your adventure!</h4>
+                    
+                    <a href="./index.html">
+                        <img src="./pokeball.png" alt="Start din rejse" style="width:10%; height:auto;">
+                    </a>
+
+            </div>
+        </div>
+       
+    </div>
+
+</body>
+</html>
